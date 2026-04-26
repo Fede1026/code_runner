@@ -1,9 +1,28 @@
 import { ImageResponse } from 'next/og';
+import { supabase } from '@/lib/supabase';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    let snippetName = "Interactive App";
+    if (id) {
+       const { data, error } = await supabase.from('snippets').select('*').eq('id', id).single();
+       if (data && !error) {
+         if (data.title) {
+            snippetName = data.title;
+         } else if (data.code?.includes('<title>')) {
+           const match = data.code.match(/<title>(.*?)<\/title>/);
+           if (match) snippetName = match[1];
+         } else {
+           snippetName = `Interactive Tool (ID: ${id.substring(0,4).toUpperCase()})`;
+         }
+       }
+    }
+
     return new ImageResponse(
       (
         <div
@@ -103,9 +122,7 @@ export async function GET(request: Request) {
                   marginBottom: '40px',
                 }}
               >
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M5 3L19 12L5 21V3Z" fill="#09090b" stroke="#09090b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+                <div style={{ fontSize: 64, display: 'flex' }}>▶️</div>
               </div>
 
               <div
@@ -118,7 +135,7 @@ export async function GET(request: Request) {
                   letterSpacing: '-0.02em',
                 }}
               >
-                Interactive App Snippet
+                {snippetName}
               </div>
               <div
                 style={{
