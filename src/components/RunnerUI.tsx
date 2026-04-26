@@ -7,10 +7,11 @@ import Toolbar from "@/components/Toolbar";
 import { detectEngine } from "@/lib/detectEngine";
 import LZString from "lz-string";
 import { supabase } from "@/lib/supabase";
+import { Code2 } from "lucide-react";
 
 const DEFAULT_CODE = `# Paste your Python code here and hit 'Run Code' to execute.`;
 
-export default function RunnerUI({ initialCode, autoRun }: { initialCode?: string, autoRun?: boolean }) {
+export default function RunnerUI({ initialCode, autoRun, initialMode }: { initialCode?: string, autoRun?: boolean, initialMode?: 'app' | 'full' }) {
   const [code, setCode] = useState<string>(initialCode || DEFAULT_CODE);
   const [language, setLanguage] = useState(detectEngine(initialCode || DEFAULT_CODE) === "web" ? "html" : "python");
   const [output, setOutput] = useState<string>("");
@@ -18,6 +19,7 @@ export default function RunnerUI({ initialCode, autoRun }: { initialCode?: strin
   const [isRunning, setIsRunning] = useState(false);
   const [shareToast, setShareToast] = useState(false);
   const [hasAutoRun, setHasAutoRun] = useState(false);
+  const [viewMode, setViewMode] = useState<'app' | 'full'>(initialMode || 'full');
 
   useEffect(() => {
     if (!initialCode && typeof window !== "undefined" && window.location.hash) {
@@ -96,16 +98,18 @@ export default function RunnerUI({ initialCode, autoRun }: { initialCode?: strin
     navigator.clipboard.writeText(code);
   };
 
-  const handleShare = async () => {
+  const handleShare = async (shareType: 'full' | 'app') => {
     const short_id = Math.random().toString(36).substring(2, 9);
     try {
       const { error } = await supabase.from('snippets').insert([{ id: short_id, code }]);
       
       if (error) {
          console.error("Supabase insert error, falling back to URL base hash copy:", error);
-         navigator.clipboard.writeText(window.location.href);
+         let fallbackUrl = new URL(window.location.href);
+         if (shareType === 'app') fallbackUrl.searchParams.set('mode', 'app');
+         navigator.clipboard.writeText(fallbackUrl.toString());
       } else {
-         const shareUrl = `${window.location.origin}/s/${short_id}`;
+         const shareUrl = `${window.location.origin}/s/${short_id}${shareType === 'app' ? '?mode=app' : ''}`;
          navigator.clipboard.writeText(shareUrl);
       }
     } catch (e) {
@@ -119,44 +123,60 @@ export default function RunnerUI({ initialCode, autoRun }: { initialCode?: strin
 
   return (
     <div className="flex flex-col h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-100">
-      <Toolbar 
-        onRun={() => handleRun(code)} 
-        onCopy={handleCopy} 
-        onShare={handleShare} 
-        isRunning={isRunning} 
-        shareToast={shareToast}
-      />
+      {/* Hide Toolbar in native app view if desired, but we keep it to let users still share */}
+      {viewMode === 'full' && (
+        <Toolbar 
+          onRun={() => handleRun(code)} 
+          onCopy={handleCopy} 
+          onShare={handleShare} 
+          isRunning={isRunning} 
+          shareToast={shareToast}
+        />
+      )}
       
-      <main className="flex-1 flex flex-col md:flex-row gap-5 p-5 overflow-hidden">
-        <section className="flex-1 h-full flex flex-col min-w-[300px]">
-          <div className="mb-3 text-xs font-semibold text-zinc-500 flex items-center justify-between tracking-wide uppercase">
-            <span>Source Code</span>
-            <span className="bg-zinc-800/80 px-2.5 py-1 rounded-md text-[10px] text-zinc-400 border border-zinc-700/50 shadow-sm flex items-center gap-1.5">
-              <span>{language === 'html' ? 'HTML/React' : 'Python'}</span>
-            </span>
-          </div>
-          <Editor value={code} onChange={handleEditorChange} language={language} />
-        </section>
+      <main className={`flex-1 flex gap-5 overflow-hidden ${viewMode === 'app' ? 'p-0' : 'p-5 flex-col md:flex-row'}`}>
+        {viewMode === 'full' && (
+          <section className="flex-1 h-full flex flex-col min-w-[300px]">
+            <div className="mb-3 text-xs font-semibold text-zinc-500 flex items-center justify-between tracking-wide uppercase">
+              <span>Source Code</span>
+              <span className="bg-zinc-800/80 px-2.5 py-1 rounded-md text-[10px] text-zinc-400 border border-zinc-700/50 shadow-sm flex items-center gap-1.5">
+                <span>{language === 'html' ? 'HTML/React' : 'Python'}</span>
+              </span>
+            </div>
+            <Editor value={code} onChange={handleEditorChange} language={language} />
+          </section>
+        )}
         
-        <section className="flex-1 h-full flex flex-col min-w-[300px]">
-          <div className="mb-3 flex items-center justify-between text-xs font-semibold text-zinc-500 tracking-wide uppercase">
-            <span>Result</span>
-            {engine ? (
-               <span className="bg-zinc-800/80 px-2.5 py-1 flex items-center gap-2 rounded-md text-[10px] border border-zinc-700/50 shadow-sm">
-                 <span className="w-1.5 h-1.5 rounded-full bg-green-400 relative">
-                    <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75"></span>
-                 </span>
-                 <span className="text-zinc-300">
-                   {engine === 'web' ? 'Browser DOM' : 'Python Server Runtime'}
-                 </span>
-               </span>
-            ) : (
-               <span className="px-2.5 py-1 text-[10px] text-zinc-600">
-                 Idle
-               </span>
-            )}
-          </div>
+        <section className={`h-full flex flex-col relative ${viewMode === 'app' ? 'w-full' : 'flex-1 min-w-[300px]'}`}>
+          {viewMode === 'full' && (
+             <div className="mb-3 flex items-center justify-between text-xs font-semibold text-zinc-500 tracking-wide uppercase">
+               <span>Result</span>
+               {engine ? (
+                  <span className="bg-zinc-800/80 px-2.5 py-1 flex items-center gap-2 rounded-md text-[10px] border border-zinc-700/50 shadow-sm">
+                    <span className="w-1.5 h-1.5 rounded-full bg-green-400 relative">
+                       <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75"></span>
+                    </span>
+                    <span className="text-zinc-300">
+                      {engine === 'web' ? 'Browser DOM' : 'Python Server Runtime'}
+                    </span>
+                  </span>
+               ) : (
+                  <span className="px-2.5 py-1 text-[10px] text-zinc-600">Idle</span>
+               )}
+             </div>
+          )}
+          
           <OutputPane engine={engine} output={output} isRunning={isRunning} />
+
+          {viewMode === 'app' && (
+            <button 
+               onClick={() => setViewMode('full')}
+               className="absolute bottom-6 left-6 z-50 flex items-center gap-2 px-5 py-3 bg-zinc-900/80 hover:bg-zinc-900 backdrop-blur-md rounded-full text-zinc-200 hover:text-white text-sm font-medium border border-white/10 shadow-2xl transition-all duration-300 hover:scale-105"
+            >
+              <Code2 size={16} />
+              View Code
+            </button>
+          )}
         </section>
       </main>
     </div>

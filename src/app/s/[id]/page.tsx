@@ -1,8 +1,16 @@
 import RunnerUI from "@/components/RunnerUI";
 import { supabase } from "@/lib/supabase";
 
-export default async function SharedSnippetPage({ params }: { params: Promise<{ id: string }> }) {
+export default async function SharedSnippetPage({ 
+  params, 
+  searchParams 
+}: { 
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ mode?: string }>;
+}) {
   const { id } = await params;
+  const resolvedSearchParams = await searchParams;
+  const initialMode = resolvedSearchParams.mode === 'app' ? 'app' : 'full';
   
   const { data, error } = await supabase
     .from("snippets")
@@ -26,5 +34,5 @@ export default async function SharedSnippetPage({ params }: { params: Promise<{ 
     );
   }
 
-  return <RunnerUI initialCode={data.code} autoRun={true} />;
+  return <RunnerUI initialCode={data.code} autoRun={true} initialMode={initialMode} />;
 }
