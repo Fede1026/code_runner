@@ -1,19 +1,9 @@
 import { ImageResponse } from 'next/og';
-import { supabase } from '@/lib/supabase';
 
 export const runtime = 'edge';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    let code = "print('Hello Vibe Coding!')";
-    if (id) {
-       const { data, error } = await supabase.from('snippets').select('code').eq('id', id).single();
-       if (data && !error) code = data.code;
-    }
-
     return new ImageResponse(
       (
         <div
@@ -22,44 +12,125 @@ export async function GET(request: Request) {
             width: '100%',
             display: 'flex',
             flexDirection: 'column',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             justifyContent: 'center',
             backgroundColor: '#09090b',
             color: '#ffffff',
-            padding: '80px',
-            fontFamily: 'monospace',
+            padding: '60px',
+            fontFamily: 'sans-serif',
+            position: 'relative',
           }}
         >
+          {/* Ambient Glow Effects */}
           <div
             style={{
-              fontSize: 64,
-              fontWeight: 'bolder',
-              color: '#ccff00',
-              marginBottom: 40,
-              display: 'flex',
-              letterSpacing: '-0.05em'
+              position: 'absolute',
+              top: '-150px',
+              right: '-150px',
+              width: '700px',
+              height: '700px',
+              background: 'radial-gradient(circle, rgba(204,255,0,0.15) 0%, rgba(9,9,11,0) 70%)',
+              borderRadius: '50%',
             }}
-          >
-            Universal Code Runner
-          </div>
+          />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: '-150px',
+              left: '-200px',
+              width: '600px',
+              height: '600px',
+              background: 'radial-gradient(circle, rgba(204,255,0,0.1) 0%, rgba(9,9,11,0) 70%)',
+              borderRadius: '50%',
+            }}
+          />
+
+          {/* Browser Chrome Window Mockup */}
           <div
             style={{
               display: 'flex',
-              padding: '40px',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              background: 'rgba(255,255,255,0.03)',
-              fontSize: 36,
-              lineHeight: 1.5,
-              textOverflow: 'ellipsis',
-              overflow: 'hidden',
-              whiteSpace: 'pre-wrap',
-              maxHeight: '380px',
+              flexDirection: 'column',
               width: '100%',
-              boxShadow: '0 0 40px rgba(204,255,0,0.05)'
+              height: '100%',
+              borderRadius: '24px',
+              border: '1px solid rgba(255,255,255,0.1)',
+              backgroundColor: 'rgba(255,255,255,0.03)',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+              overflow: 'hidden',
+              position: 'relative',
+              zIndex: 10,
             }}
           >
-            {code.length > 250 ? code.slice(0, 250) + '\n...' : code}
+            {/* Header / Traffic Lights */}
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: '24px 32px',
+                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                backgroundColor: 'rgba(255,255,255,0.02)',
+              }}
+            >
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#ff5f56' }} />
+                <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#ffbd2e' }} />
+                <div style={{ width: '16px', height: '16px', borderRadius: '50%', backgroundColor: '#27c93f' }} />
+              </div>
+            </div>
+
+            {/* Content Area */}
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flex: 1,
+                padding: '40px',
+              }}
+            >
+              {/* Sleek Play Button Mock */}
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  width: '120px',
+                  height: '120px',
+                  borderRadius: '35px',
+                  backgroundColor: '#ccff00',
+                  boxShadow: '0 0 45px rgba(204,255,0,0.25)',
+                  marginBottom: '40px',
+                }}
+              >
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 3L19 12L5 21V3Z" fill="#09090b" stroke="#09090b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+
+              <div
+                style={{
+                  display: 'flex',
+                  fontSize: 56,
+                  fontWeight: 700,
+                  color: '#ffffff',
+                  marginBottom: '20px',
+                  letterSpacing: '-0.02em',
+                }}
+              >
+                Interactive App Snippet
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  fontSize: 32,
+                  color: '#a1a1aa',
+                  fontWeight: 500,
+                }}
+              >
+                Click to run this interactive app.
+              </div>
+            </div>
           </div>
         </div>
       ),
@@ -69,8 +140,6 @@ export async function GET(request: Request) {
       },
     );
   } catch (e: any) {
-    return new Response(`Failed to generate preview image`, {
-      status: 500,
-    });
+    return new Response(`Failed to generate preview image`, { status: 500 });
   }
 }
