@@ -8,14 +8,7 @@ import { detectEngine } from "@/lib/detectEngine";
 import LZString from "lz-string";
 import { supabase } from "@/lib/supabase";
 
-const DEFAULT_CODE = `def greet(name):
-    print("Initializing environment...")
-    # Calculating the meaning of life
-    answer = 42
-    
-    return f"Hello, {name}! Welcome to Vibe Coding. (Answer: {answer})"
-
-print(greet("Developer"))`;
+const DEFAULT_CODE = `# Paste your Python code here and hit 'Run Code' to execute.`;
 
 export default function RunnerUI({ initialCode, autoRun }: { initialCode?: string, autoRun?: boolean }) {
   const [code, setCode] = useState<string>(initialCode || DEFAULT_CODE);
