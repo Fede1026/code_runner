@@ -1,7 +1,7 @@
 "use client";
 
-import { useRef } from "react";
-import { Maximize2 } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Maximize2, Minimize2 } from "lucide-react";
 
 interface OutputPaneProps {
   engine: "web" | "python" | null;
@@ -10,17 +10,33 @@ interface OutputPaneProps {
 }
 
 export default function OutputPane({ engine, output, isRunning }: OutputPaneProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const handleFullscreen = () => {
-    if (iframeRef.current && iframeRef.current.requestFullscreen) {
-      iframeRef.current.requestFullscreen().then(() => {
-        // Ensure iframe captures keyboard inputs like arrow keys natively immediately
-        iframeRef.current?.focus();
-        iframeRef.current?.contentWindow?.focus();
-      }).catch(err => {
-        console.error("Fullscreen error:", err);
-      });
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen().then(() => {
+          // Immediately give focus into the pane
+          iframeRef.current?.focus();
+          iframeRef.current?.contentWindow?.focus();
+        }).catch((err: any) => {
+          console.error("Fullscreen error:", err);
+        });
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
     }
   };
 
@@ -48,29 +64,17 @@ export default function OutputPane({ engine, output, isRunning }: OutputPaneProp
   }
 
   return (
-    <div className="flex-1 w-full h-full rounded-lg border border-zinc-800 bg-white dark:bg-zinc-900 overflow-hidden flex flex-col shadow-xl transition-colors duration-300">
-      <div className="p-2.5 bg-zinc-100 dark:bg-zinc-800 border-b border-zinc-200 dark:border-zinc-700/80 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="flex gap-1.5 ml-1 mr-3">
-            <div className="w-3 h-3 rounded-full bg-red-400/80"></div>
-            <div className="w-3 h-3 rounded-full bg-amber-400/80"></div>
-            <div className="w-3 h-3 rounded-full bg-green-400/80"></div>
-          </div>
-          <span className="text-xs font-semibold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
-            {engine === 'web' ? 'Web Preview' : 'Python Console'}
-          </span>
-        </div>
-        
-        {engine === 'web' && (
-          <button 
-            onClick={handleFullscreen}
-            className="p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-700/50 rounded transition-colors"
-            title="Fullscreen"
-          >
-            <Maximize2 size={15} />
-          </button>
-        )}
-      </div>
+    <div 
+      ref={containerRef}
+      className={`group relative flex-1 w-full h-full border-zinc-800 bg-white dark:bg-[#0d0d0d] overflow-hidden flex flex-col shadow-xl transition-all duration-300 ${isFullscreen ? 'rounded-none border-0' : 'rounded-lg border'}`}
+    >
+      <button 
+        onClick={toggleFullscreen}
+        className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-zinc-900/40 hover:bg-zinc-900/80 text-white backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95"
+        title={isFullscreen ? "Exit Full Screen" : "View Full Screen"}
+      >
+        {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+      </button>
       
       {engine === "web" ? (
         <iframe
@@ -81,7 +85,7 @@ export default function OutputPane({ engine, output, isRunning }: OutputPaneProp
           sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
         />
       ) : (
-        <pre className="p-5 text-sm font-mono text-zinc-300 whitespace-pre-wrap flex-1 w-full h-full overflow-auto bg-[#0d0d0d] leading-relaxed selection:bg-indigo-500/30">
+        <pre className="p-6 pt-16 text-sm font-mono text-zinc-300 whitespace-pre-wrap flex-1 w-full h-full overflow-auto leading-relaxed selection:bg-indigo-500/30">
           {output || <span className="text-zinc-600 italic">No output.</span>}
         </pre>
       )}
