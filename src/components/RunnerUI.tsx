@@ -7,14 +7,10 @@ import Toolbar from "@/components/Toolbar";
 import { detectEngine } from "@/lib/detectEngine";
 import LZString from "lz-string";
 import { supabase } from "@/lib/supabase";
-import { useSearchParams } from "next/navigation";
 
 const DEFAULT_CODE = `# Paste your Python code here and hit 'Run Code' to execute.`;
 
 export default function RunnerUI({ initialCode, autoRun, initialMode }: { initialCode?: string, autoRun?: boolean, initialMode?: 'app' | 'full' }) {
-  const searchParams = useSearchParams();
-  const urlMode = searchParams.get('mode');
-  
   const [code, setCode] = useState<string>(initialCode || DEFAULT_CODE);
   const [language, setLanguage] = useState(detectEngine(initialCode || DEFAULT_CODE) === "web" ? "html" : "python");
   const [output, setOutput] = useState<string>("");
@@ -23,7 +19,7 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
   const [shareToast, setShareToast] = useState(false);
   const [hasAutoRun, setHasAutoRun] = useState(false);
   
-  const isAppMode = initialMode === 'app' || urlMode === 'app';
+  const isAppMode = initialMode === 'app';
 
   const handleRun = async (codeToRun: string = code) => {
     setIsRunning(true);

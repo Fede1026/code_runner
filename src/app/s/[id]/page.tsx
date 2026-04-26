@@ -1,6 +1,5 @@
 import RunnerUI from "@/components/RunnerUI";
 import { supabase } from "@/lib/supabase";
-import { Suspense } from "react";
 
 export default async function SharedSnippetPage({ 
   params, 
@@ -35,9 +34,5 @@ export default async function SharedSnippetPage({
     );
   }
 
-  return (
-    <Suspense fallback={<div className="h-screen w-screen bg-[#09090b]"></div>}>
-      <RunnerUI initialCode={data.code} autoRun={true} initialMode={initialMode} />
-    </Suspense>
-  );
+  return <RunnerUI initialCode={data.code} autoRun={true} initialMode={initialMode} />;
 }
