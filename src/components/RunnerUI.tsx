@@ -65,7 +65,6 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
          if (decompressed) {
            setCode(decompressed);
            setLanguage(detectEngine(decompressed) === "web" ? "html" : "python");
-           // Trigger autoRun if they followed a legacy link!
            handleRun(decompressed);
          }
       } catch (e) {
@@ -133,7 +132,7 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#09090b] text-zinc-100 font-sans selection:bg-indigo-500/30 selection:text-indigo-100">
+    <div className="flex flex-col h-screen bg-[#09090b] text-zinc-100 font-sans font-[family-name:var(--font-geist-sans)] selection:bg-[#ccff00]/30 selection:text-[#ccff00]">
       <Toolbar 
         onRun={() => handleRun(code)} 
         onCopy={handleCopy} 
@@ -144,32 +143,36 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
       
       <main className="flex-1 flex gap-5 overflow-hidden p-5 flex-col md:flex-row">
         <section className="flex-1 h-full flex flex-col min-w-[300px]">
-          <div className="mb-3 text-xs font-semibold text-zinc-500 flex items-center justify-between tracking-wide uppercase">
-            <span>Source Code</span>
-            <span className="bg-zinc-800/80 px-2.5 py-1 rounded-md text-[10px] text-zinc-400 border border-zinc-700/50 shadow-sm flex items-center gap-1.5">
-              <span>{language === 'html' ? 'HTML/React' : 'Python'}</span>
+          <div className="mb-3 text-[11px] font-medium text-zinc-500 flex items-center justify-between tracking-wide uppercase">
+            <span>Source Target</span>
+            <span className="bg-white/5 pl-2 pr-2 py-0.5 rounded text-[10px] text-zinc-400 border-[0.5px] border-white/10 shadow-sm backdrop-blur-md tracking-normal flex items-center">
+              {language === 'html' ? 'HTML/React Engine' : 'Python Runtime'}
             </span>
           </div>
-          <Editor value={code} onChange={handleEditorChange} language={language} />
+          <div className="flex-1 w-full h-full rounded overflow-hidden border-[0.5px] border-white/5 shadow-2xl bg-[#09090b] ring-1 ring-white/5 relative">
+            <Editor value={code} onChange={handleEditorChange} language={language} />
+          </div>
         </section>
         
         <section className="h-full flex flex-col relative flex-1 min-w-[300px]">
-           <div className="mb-3 flex items-center justify-between text-xs font-semibold text-zinc-500 tracking-wide uppercase">
-             <span>Result</span>
+           <div className="mb-3 flex items-center justify-between text-[11px] font-medium text-zinc-500 tracking-wide uppercase">
+             <span>Execution Pane</span>
              {engine ? (
-                <span className="bg-zinc-800/80 px-2.5 py-1 flex items-center gap-2 rounded-md text-[10px] border border-zinc-700/50 shadow-sm">
-                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 relative">
-                     <span className="absolute inset-0 rounded-full bg-green-400 animate-ping opacity-75"></span>
+                <span className="bg-white/5 px-2.5 py-0.5 flex items-center gap-2 rounded text-[10px] border-[0.5px] border-[#ccff00]/30 shadow-sm backdrop-blur-md">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#ccff00] relative">
+                     <span className="absolute inset-0 rounded-full bg-[#ccff00] animate-ping opacity-75"></span>
                   </span>
-                  <span className="text-zinc-300">
-                    {engine === 'web' ? 'Browser DOM' : 'Python Server Runtime'}
+                  <span className="text-zinc-200 tracking-normal font-semibold">
+                    {engine === 'web' ? 'DOM Synced' : 'Terminal View'}
                   </span>
                 </span>
              ) : (
-                <span className="px-2.5 py-1 text-[10px] text-zinc-600">Idle</span>
+                <span className="px-2 py-0.5 text-[10px] text-zinc-600 tracking-normal font-medium border-[0.5px] border-transparent">Standby</span>
              )}
            </div>
-          <OutputPane engine={engine} output={output} isRunning={isRunning} isAppMode={false} />
+          <div className="flex-1 w-full h-full rounded overflow-hidden shadow-2xl bg-[#09090b] ring-1 ring-white/5 relative">
+            <OutputPane engine={engine} output={output} isRunning={isRunning} isAppMode={false} />
+          </div>
         </section>
       </main>
     </div>

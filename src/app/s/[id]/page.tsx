@@ -1,5 +1,24 @@
 import RunnerUI from "@/components/RunnerUI";
 import { supabase } from "@/lib/supabase";
+import type { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  return {
+    title: `Snippet \u2014 Code Runner`,
+    openGraph: {
+      title: `Shared Snippet`,
+      description: `View this interactive snippet directly on Code Runner.`,
+      images: [`/api/og?id=${id}`],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `Shared Snippet`,
+      description: `View this interactive snippet directly on Code Runner.`,
+      images: [`/api/og?id=${id}`],
+    },
+  };
+}
 
 export default async function SharedSnippetPage({ 
   params, 
@@ -27,7 +46,7 @@ export default async function SharedSnippetPage({
          <p className="text-zinc-500 mb-8 max-w-md text-center">
             The code snippet you are looking for doesn't exist or has been removed from the database.
          </p>
-         <a href="/" className="px-5 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-sm font-medium rounded-lg transition-colors border border-zinc-700">
+         <a href="/" className="px-5 py-2.5 bg-[#ccff00] hover:bg-[#ccff00]/90 text-black text-sm font-semibold rounded-md transition-colors border border-transparent shadow-[0_0_15px_rgba(204,255,0,0.2)]">
             Return Home
          </a>
       </div>

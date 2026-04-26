@@ -10,7 +10,7 @@ interface EditorProps {
 
 export default function Editor({ value, onChange, language }: EditorProps) {
   return (
-    <div className="flex-1 w-full h-full rounded-lg overflow-hidden border border-zinc-800 shadow-xl bg-[#1e1e1e]">
+    <div className="flex-1 w-full h-full bg-transparent overflow-hidden">
       <MonacoEditor
         height="100%"
         language={language}
@@ -19,16 +19,18 @@ export default function Editor({ value, onChange, language }: EditorProps) {
         onChange={onChange}
         options={{
           minimap: { enabled: false },
-          fontSize: 15,
-          fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
+          fontSize: 13,
+          fontFamily: "var(--font-geist-mono), monospace",
           wordWrap: "on",
-          padding: { top: 16 },
+          padding: { top: 16, bottom: 16 },
           roundedSelection: false,
           scrollBeyondLastLine: false,
           smoothScrolling: true,
           cursorBlinking: "smooth",
           cursorSmoothCaretAnimation: "on",
           formatOnPaste: true,
+          fontLigatures: true,
+          lineHeight: 24,
         }}
       />
     </div>

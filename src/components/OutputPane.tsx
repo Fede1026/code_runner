@@ -27,7 +27,6 @@ export default function OutputPane({ engine, output, isRunning, isAppMode }: Out
     if (!document.fullscreenElement) {
       if (containerRef.current?.requestFullscreen) {
         containerRef.current.requestFullscreen().then(() => {
-          // Immediately give focus into the pane
           iframeRef.current?.focus();
           iframeRef.current?.contentWindow?.focus();
         }).catch((err: any) => {
@@ -43,23 +42,23 @@ export default function OutputPane({ engine, output, isRunning, isAppMode }: Out
 
   if (isRunning) {
     return (
-      <div className={`flex-1 w-full h-full border-zinc-800/80 bg-zinc-900/50 flex flex-col items-center justify-center backdrop-blur-sm shadow-inner transition-all duration-300 ${isFullscreen || isAppMode ? 'rounded-none border-0' : 'rounded-lg border'}`}>
-         <div className="w-10 h-10 border-4 border-indigo-500/30 border-t-indigo-500 rounded-full animate-spin shadow-[0_0_15px_rgba(99,102,241,0.4)]"></div>
-         <p className="mt-6 text-zinc-400 font-medium animate-pulse tracking-wide text-sm">Executing code...</p>
+      <div className={`flex-1 w-full h-full border-[0.5px] border-white/5 bg-[#09090b]/50 flex flex-col items-center justify-center backdrop-blur-md transition-all duration-300 ${isFullscreen || isAppMode ? 'rounded-none border-0' : 'rounded'} shadow-inner`}>
+         <div className="w-10 h-10 border-4 border-[#ccff00]/20 border-t-[#ccff00] rounded-full animate-spin shadow-[0_0_20px_rgba(204,255,0,0.15)]"></div>
+         <p className="mt-6 text-zinc-400 font-medium animate-pulse tracking-wide text-sm font-[family-name:var(--font-geist-sans)]">Processing output...</p>
       </div>
     );
   }
 
   if (!engine) {
     return (
-      <div className={`flex-1 w-full h-full border-zinc-800/80 bg-zinc-900/30 flex flex-col items-center justify-center text-zinc-500 shadow-inner ${isFullscreen || isAppMode ? 'rounded-none border-0' : 'rounded-lg border'}`}>
-        <div className="p-4 bg-zinc-800/30 rounded-full mb-4">
-           <svg className="w-8 h-8 text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+      <div className={`flex-1 w-full h-full border-[0.5px] border-white/10 bg-[#09090b]/30 flex flex-col items-center justify-center text-zinc-500 font-[family-name:var(--font-geist-sans)] shadow-inner transition-all ${isFullscreen || isAppMode ? 'rounded-none border-0' : 'rounded'}`}>
+        <div className="p-4 bg-white/5 border-[0.5px] border-white/10 rounded-full mb-4 shadow-xl">
+           <svg className="w-8 h-8 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
            </svg>
         </div>
-        <p className="font-medium text-sm">Ready to execute</p>
-        <p className="text-xs text-zinc-600 mt-2 max-w-[200px] text-center">Click run to see the result using the Web or Python engine.</p>
+        <p className="font-semibold text-sm text-zinc-300">Ready to execute</p>
+        <p className="text-xs text-zinc-500 mt-2 max-w-[220px] text-center">Trigger execution to see web or terminal payloads.</p>
       </div>
     );
   }
@@ -67,15 +66,15 @@ export default function OutputPane({ engine, output, isRunning, isAppMode }: Out
   return (
     <div 
       ref={containerRef}
-      className={`group relative flex-1 w-full h-full border-zinc-800 bg-white dark:bg-[#0d0d0d] overflow-hidden flex flex-col transition-all duration-300 ${isFullscreen || isAppMode ? 'rounded-none border-0' : 'rounded-lg border shadow-xl'}`}
+      className={`group relative flex-1 w-full h-full border-[0.5px] border-white/10 bg-white dark:bg-[#09090b] overflow-hidden flex flex-col transition-all duration-300 ${isFullscreen || isAppMode ? 'rounded-none border-0' : 'rounded shadow-2xl'}`}
     >
       {!isAppMode && (
         <button 
           onClick={toggleFullscreen}
-          className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-zinc-900/40 hover:bg-zinc-900/80 text-white backdrop-blur-md border border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95"
+          className="absolute top-4 right-4 z-50 p-2.5 rounded-full bg-[#09090b]/60 hover:bg-[#09090b]/90 text-zinc-300 hover:text-white backdrop-blur-xl border-[0.5px] border-white/10 opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-2xl hover:scale-110 active:scale-95"
           title={isFullscreen ? "Exit Full Screen" : "View Full Screen"}
         >
-          {isFullscreen ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
+          {isFullscreen ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
         </button>
       )}
       
@@ -88,8 +87,8 @@ export default function OutputPane({ engine, output, isRunning, isAppMode }: Out
           sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"
         />
       ) : (
-        <pre className="p-6 text-sm font-mono text-zinc-300 whitespace-pre-wrap flex-1 w-full h-full overflow-auto leading-relaxed selection:bg-indigo-500/30">
-          {output || <span className="text-zinc-600 italic">No output.</span>}
+        <pre className="p-6 pt-16 text-[13px] text-zinc-300 whitespace-pre-wrap flex-1 w-full h-full overflow-auto leading-relaxed selection:bg-[#ccff00]/30 selection:text-white font-[family-name:var(--font-geist-mono)] block bg-transparent">
+          {output || <span className="text-zinc-600 italic font-[family-name:var(--font-geist-sans)]">Execution completed without output.</span>}
         </pre>
       )}
     </div>
