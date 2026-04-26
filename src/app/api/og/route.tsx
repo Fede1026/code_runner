@@ -128,7 +128,7 @@ export async function GET(request: Request) {
                   fontWeight: 500,
                 }}
               >
-                Click to run this interactive app.
+                Click to Launch App
               </div>
             </div>
           </div>

@@ -12,19 +12,28 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const appUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://code-runner-fede.vercel.app');
+
 export const metadata: Metadata = {
+  metadataBase: new URL(appUrl),
   title: "Universal Code Runner",
   description: "A fast, immersive coding environment spanning modern web paradigms and python runtime executions.",
   openGraph: {
     title: "Universal Code Runner",
     description: "A fast, immersive coding environment spanning modern web paradigms and python runtime executions.",
-    images: ["/api/og"],
+    url: appUrl,
+    images: [{
+      url: `${appUrl}/api/og`,
+      width: 1200,
+      height: 630,
+      alt: "Universal Code Runner Preview"
+    }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Universal Code Runner",
     description: "A fast, immersive coding environment spanning modern web paradigms and python runtime executions.",
-    images: ["/api/og"],
+    images: [`${appUrl}/api/og`],
   },
 };
 

@@ -4,18 +4,26 @@ import type { Metadata } from "next";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
   const { id } = await params;
+  const appUrl = process.env.NEXT_PUBLIC_SITE_URL || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://code-runner-fede.vercel.app');
   return {
-    title: `Snippet \u2014 Code Runner`,
+    metadataBase: new URL(appUrl),
+    title: `Interactive App \u2014 Code Runner`,
     openGraph: {
-      title: `Shared Snippet`,
-      description: `View this interactive snippet directly on Code Runner.`,
-      images: [`/api/og?id=${id}`],
+      title: `Interactive App \u2014 Code Runner`,
+      description: `Click to Launch App`,
+      url: `${appUrl}/s/${id}`,
+      images: [{
+        url: `${appUrl}/api/og?id=${id}`,
+        width: 1200,
+        height: 630,
+        alt: "Interactive App Preview"
+      }],
     },
     twitter: {
       card: "summary_large_image",
-      title: `Shared Snippet`,
-      description: `View this interactive snippet directly on Code Runner.`,
-      images: [`/api/og?id=${id}`],
+      title: `Interactive App \u2014 Code Runner`,
+      description: `Click to Launch App`,
+      images: [`${appUrl}/api/og?id=${id}`],
     },
   };
 }
