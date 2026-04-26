@@ -7,6 +7,7 @@ import Toolbar from "@/components/Toolbar";
 import { detectEngine } from "@/lib/detectEngine";
 import LZString from "lz-string";
 import { supabase } from "@/lib/supabase";
+import { Code2, X } from "lucide-react";
 
 const DEFAULT_CODE = `# Paste your Python code here and hit 'Run Code' to execute.`;
 
@@ -19,10 +20,19 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
   const [shareToast, setShareToast] = useState(false);
   const [hasAutoRun, setHasAutoRun] = useState(false);
   
+  // Core State for Single-View Toggle Logic
+  const [mobileView, setMobileView] = useState<'code' | 'output'>('output');
+  
   const isAppMode = initialMode === 'app';
 
   const handleRun = async (codeToRun: string = code) => {
     setIsRunning(true);
+    
+    // Automatically bounce back to the output pane during execution dynamically on mobile devices
+    if (typeof window !== 'undefined' && window.innerWidth < 768) {
+       setMobileView('output');
+    }
+
     const detectedEngine = detectEngine(codeToRun);
     setEngine(detectedEngine);
 
@@ -132,7 +142,7 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
   }
 
   return (
-    <div className="flex flex-col h-screen bg-[#09090b] text-zinc-100 font-sans font-[family-name:var(--font-geist-sans)] selection:bg-[#ccff00]/30 selection:text-[#ccff00]">
+    <div className="flex flex-col h-[100dvh] bg-[#09090b] text-zinc-100 font-sans font-[family-name:var(--font-geist-sans)] selection:bg-[#ccff00]/30 selection:text-[#ccff00] overflow-hidden">
       <Toolbar 
         onRun={() => handleRun(code)} 
         onCopy={handleCopy} 
@@ -141,8 +151,12 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
         shareToast={shareToast}
       />
       
-      <main className="flex-1 flex gap-5 overflow-hidden p-5 flex-col md:flex-row">
-        <section className="flex-1 h-full flex flex-col min-w-[300px]">
+      <main className="flex-1 flex w-full relative overflow-hidden md:p-5 md:gap-5">
+        
+        {/* Code Editor Section (Overlays rigidly on Mobile, Standard Flex on Desktop) */}
+        <section 
+           className={`absolute md:relative inset-0 w-full md:w-auto h-full flex flex-col z-20 md:z-auto md:flex-1 bg-[#09090b] p-4 md:p-0 transition-transform duration-300 ease-out md:translate-y-0 ${mobileView === 'code' ? 'translate-y-0' : 'translate-y-[100%]'}`}
+        >
           <div className="mb-3 text-[11px] font-medium text-zinc-500 flex items-center justify-between tracking-wide uppercase">
             <span>Source Target</span>
             <span className="bg-white/5 pl-2 pr-2 py-0.5 rounded text-[10px] text-zinc-400 border-[0.5px] border-white/10 shadow-sm backdrop-blur-md tracking-normal flex items-center">
@@ -154,7 +168,10 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
           </div>
         </section>
         
-        <section className="h-full flex flex-col relative flex-1 min-w-[300px]">
+        {/* Output Section (Base Layer on Mobile, Flexible Output panel on Desktop) */}
+        <section 
+           className="absolute md:relative inset-0 w-full md:w-auto h-full flex flex-col z-10 md:z-auto md:flex-1 bg-[#09090b] p-4 md:p-0"
+        >
            <div className="mb-3 flex items-center justify-between text-[11px] font-medium text-zinc-500 tracking-wide uppercase">
              <span>Execution Pane</span>
              {engine ? (
@@ -175,6 +192,16 @@ export default function RunnerUI({ initialCode, autoRun, initialMode }: { initia
           </div>
         </section>
       </main>
+
+      {/* Floating Action Button purely for mobile Single-View constraints */ }
+      {!isAppMode && (
+        <button
+          onClick={() => setMobileView(mobileView === 'code' ? 'output' : 'code')}
+          className="md:hidden fixed bottom-6 right-6 z-50 w-14 h-14 rounded-full bg-[#ccff00] text-black shadow-[0_0_25px_rgba(204,255,0,0.4)] flex items-center justify-center transition-all duration-300 active:scale-90 hover:scale-105"
+        >
+          {mobileView === 'code' ? <X size={24} /> : <Code2 size={24} />}
+        </button>
+      )}
     </div>
   );
 }
